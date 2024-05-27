@@ -1033,7 +1033,7 @@ public class RNDeviceModule extends ReactContextBaseJavaModule {
     }
 
     PowerManager powerManager = (PowerManager)getReactApplicationContext().getSystemService(Context.POWER_SERVICE);
-    boolean powerSaveMode = false;`
+    boolean powerSaveMode = false;
     System.out.println("intent.getAction() " + intent.getAction());
     if (intent.getAction().equals("huawei.intent.action.POWER_MODE_CHANGED_ACTION") || intent.getAction().equals("miui.intent.action.POWER_SAVE_MODE_CHANGED")) {
       System.out.println("intent.getExtras() " + intent.getExtras());
