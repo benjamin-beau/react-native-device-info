@@ -18,6 +18,7 @@ import android.media.MediaCodecList;
 import android.net.wifi.WifiManager;
 import android.net.wifi.WifiInfo;
 import android.os.Build;
+import android.os.Bundle;
 import android.os.Environment;
 import android.os.PowerManager;
 import android.os.StatFs;
@@ -54,6 +55,7 @@ import java.lang.reflect.Method;
 import java.net.InetAddress;
 import java.nio.ByteBuffer;
 import java.nio.ByteOrder;
+import java.util.ArrayList;
 import java.util.Collections;
 import java.util.HashMap;
 import java.util.List;
@@ -545,7 +547,14 @@ public class RNDeviceModule extends ReactContextBaseJavaModule {
 
   @ReactMethod(isBlockingSynchronousMethod = true)
   public WritableMap getPowerStateSync() {
-    Intent intent = getReactApplicationContext().registerReceiver(null, new IntentFilter(Intent.ACTION_BATTERY_CHANGED));
+    IntentFilter filter = new IntentFilter();
+
+    filter.addAction(Intent.ACTION_BATTERY_CHANGED);
+    filter.addAction("miui.intent.action.POWER_SAVE_MODE_CHANGED");
+    filter.addAction("huawei.intent.action.POWER_MODE_CHANGED_ACTION");
+
+    Intent intent = getReactApplicationContext().registerReceiver(null, filter);
+
     return getPowerStateFromIntent(intent);
   }
 
@@ -1025,7 +1034,13 @@ public class RNDeviceModule extends ReactContextBaseJavaModule {
 
     PowerManager powerManager = (PowerManager)getReactApplicationContext().getSystemService(Context.POWER_SERVICE);
     boolean powerSaveMode = false;
-    if (android.os.Build.VERSION.SDK_INT >= android.os.Build.VERSION_CODES.LOLLIPOP) {
+    if (intent.getAction().equals("huawei.intent.action.POWER_MODE_CHANGED_ACTION") || intent.getAction().equals("miui.intent.action.POWER_SAVE_MODE_CHANGED")) {
+      Bundle extras = intent.getExtras();
+      if ((extras != null) && extras.containsKey("state")) {
+        int state = intent.getExtras().getInt("state");
+        powerSaveMode = (state == 1);  // ON=1; OFF=2
+      }
+    } else if (android.os.Build.VERSION.SDK_INT >= android.os.Build.VERSION_CODES.LOLLIPOP) {
       powerSaveMode = powerManager.isPowerSaveMode();
     }
 
